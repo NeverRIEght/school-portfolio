@@ -49,7 +49,7 @@
                   <Insets bottom="5.0" left="5.0" />
                </GridPane.margin>
                <content>
-                  <VBox fx:id="pupilsList" alignment="CENTER" prefHeight="642.0" prefWidth="317.0" />
+                  <VBox fx:id="pupilsList" alignment="TOP_CENTER" prefHeight="642.0" prefWidth="317.0" />
                </content>
             </ScrollPane>
          </children>

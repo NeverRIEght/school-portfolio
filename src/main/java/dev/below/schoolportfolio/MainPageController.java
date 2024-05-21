@@ -10,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class MainPageController {
@@ -20,12 +21,14 @@ public class MainPageController {
     @FXML
     public void createPupilButtonClicked() {
         Pupil newPupil = new Pupil("New", "Pupil");
+
         Button pupilButton = new Button();
-        pupilButton.minWidth(320);
-        pupilButton.prefWidth(320);
-        pupilButton.setText("New Pupil");
-        pupilButton.setWrapText(true);
-        pupilButton.setMinHeight(24);
+        pupilButton.setPrefWidth(320);
+        pupilButton.setPrefHeight(28);
+        pupilButton.setFont(javafx.scene.text.Font.font("Arial", 14));
+
+        pupilButton.setText(newPupil.getName() + " " + newPupil.getSurname());
+
         pupilButton.toFront();
         pupilsList.getChildren().add(pupilButton);
     }
