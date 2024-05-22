@@ -1,25 +1,22 @@
 package dev.below.schoolportfolio.entities;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pupil {
     private String name;
     private String surname;
-    private LocalDateTime birthDate;
+    private LocalDate birthDate;
     private String grade;
     private String favouriteSubject;
+    private String pathToPhoto;
+    private List<String> documents;
 
     public Pupil(String name, String surname) {
         this.name = name;
         this.surname = surname;
-    }
-
-    public Pupil(String name, String surname, LocalDateTime birthDate, String grade, String favouriteSubject) {
-        this.name = name;
-        this.surname = surname;
-        this.birthDate = birthDate;
-        this.grade = grade;
-        this.favouriteSubject = favouriteSubject;
+        this.documents = new ArrayList<>();
     }
 
     public String getName() {
@@ -38,11 +35,11 @@ public class Pupil {
         this.surname = surname;
     }
 
-    public LocalDateTime getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDateTime birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
@@ -60,5 +57,25 @@ public class Pupil {
 
     public void setFavouriteSubject(String favouriteSubject) {
         this.favouriteSubject = favouriteSubject;
+    }
+
+    public String getPathToPhoto() {
+        return pathToPhoto;
+    }
+
+    public void setPathToPhoto(String pathToPhoto) {
+        this.pathToPhoto = pathToPhoto;
+    }
+
+    public void addDocument(String document) {
+        documents.add(document);
+    }
+
+    public void removeDocument(String document) {
+        documents.remove(document);
+    }
+
+    public List<String> getDocuments() {
+        return documents;
     }
 }

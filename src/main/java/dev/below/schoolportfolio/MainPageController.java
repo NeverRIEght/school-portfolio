@@ -1,29 +1,92 @@
 package dev.below.schoolportfolio;
 
 import dev.below.schoolportfolio.entities.Pupil;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+
+import static dev.below.schoolportfolio.App.IMAGES;
+import static dev.below.schoolportfolio.App.DOCS;
 
 public class MainPageController {
+    public ImageView photoBox;
+    public TableColumn documentsColumn;
+    private int currentPupilIndex;
+    private List<Pupil> pupils = new ArrayList<>();
+
+    @FXML
+    private TableView<Document> filesTable;
+    @FXML
     public VBox pupilsList;
     @FXML
-    private Button createPupilButton;
+    private TextField nameTextField;
+    @FXML
+    private TextField surnameTextField;
+    @FXML
+    private DatePicker birthDatePicker;
+    @FXML
+    private ComboBox<String> gradePicker;
+    @FXML
+    private ComboBox<String> subjectPicker;
+    @FXML
+    private GridPane pupilInfo;
+
+    @FXML
+    public void initialize() {
+        // Обработчик клика на строку
+        filesTable.setOnMouseClicked(this::handleRowClick);
+    }
+
+    private void handleRowClick(MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() == 2) { // Обработка двойного клика
+            Document selectedDocument = filesTable.getSelectionModel().getSelectedItem();
+            if (selectedDocument != null) {
+                openFile(new File(selectedDocument.getDocument()));
+            }
+        }
+    }
+
+    public void deleteDocument(ActionEvent actionEvent) {
+        Document selectedDocument = filesTable.getSelectionModel().getSelectedItem();
+        if (selectedDocument != null) {
+            Pupil currentPupil = getCurrentPupil();
+            currentPupil.removeDocument(selectedDocument.getDocument());
+            updateDocumentsList();
+        }
+    }
+
+    private Pupil getCurrentPupil() {
+        return pupils.get(currentPupilIndex);
+    }
 
     @FXML
     public void createPupilButtonClicked() {
-        Pupil newPupil = new Pupil("New", "Pupil");
-        Button pupilButton = getPupilButton(newPupil);
+        Pupil pupil = new Pupil("Новый", "Ученик");
+        pupils.add(pupil);
 
-        pupilsList.getChildren().add(pupilButton);
+        updatePupilsList();
+        setPupilInfo(pupil);
+        showPupilInfo();
     }
 
     private Button getPupilButton(Pupil pupil) {
@@ -34,79 +97,181 @@ public class MainPageController {
         pupilButton.toFront();
 
         pupilButton.setText(pupil.getName() + " " + pupil.getSurname());
+
+        pupilButton.setOnAction(event -> {
+            setPupilInfo(pupil);
+            currentPupilIndex = pupils.indexOf(pupil);
+        });
         return pupilButton;
     }
 
-//    @FXML
-//    private Button btnRepeatable;
-//    @FXML
-//    private Button btnAddImage1;
-//    @FXML
-//    private Button btnAddImage2;
-//    @FXML
-//    private ImageView imageViewAddImage1;
-//    @FXML
-//    private ImageView imageViewAddImage2;
-//    @FXML
-//    private VBox questsVBox;
-//    private String imagePath1 = "";
-//    private String imagePath2 = "";
-//
-//    @FXML
-//    protected void onMouseClicked() throws IOException {
-//        FXMLLoader fxmlLoader = new FXMLLoader(new File("D:\\Java\\apex-legends-battle-pass-helper\\src\\main\\java\\org\\apexlegendsbphelper\\View\\add-quests-page.fxml").toURI().toURL());
-//        Scene scene = new Scene(fxmlLoader.load(), 850, 478);
-//
-//        Stage window = (Stage) btnRepeatable.getScene().getWindow();
-//        window.setScene(scene);
-//        btnRepeatable.setText("Clicked!");
-//    }
-//    @FXML
-//    protected void btnClickLoadImage(ActionEvent event) {
-//        Button clickedButton = (Button) event.getSource();
-//        String buttonId = clickedButton.getId();
-//
-//        String pathToWeekImage = pathFixer(openFileChooser());
-//        if(pathToWeekImage != null) {
-//            Image weekImage = new Image(new File(pathToWeekImage).toURI().toString());
-//            switch (buttonId) {
-//                case "btnAddImage1" -> {
-//                    imagePath1 = pathToWeekImage;
-//                    btnAddImage1.setVisible(false);
-//                    imageViewAddImage1.setImage(weekImage);
-//                    imageViewAddImage1.setVisible(true);
-//                }
-//                case "btnAddImage2" -> {
-//                    imagePath2 = pathToWeekImage;
-//                    btnAddImage2.setVisible(false);
-//                    imageViewAddImage2.setImage(weekImage);
-//                    imageViewAddImage2.setVisible(true);
-//                }
-//            }
-//        }
-//    }
-//
-//    @FXML
-//    protected void btnClickResetImages() {
-//        btnAddImage1.setVisible(true);
-//        imageViewAddImage1.setVisible(false);
-//        btnAddImage2.setVisible(true);
-//        imageViewAddImage2.setVisible(false);
-//    }
-//
-//    @FXML
-//    protected void btnClickScanImages() throws TesseractException, IOException {
-//        Quest[] quests = processWeekImages(imagePath1, imagePath2);
-//        if(quests != null) {
-//            for(Quest quest : quests) {
-//                Button questButton = new Button();
-//                questButton.setText(quest.getQuestNameBR());
-//                questButton.setWrapText(true);
-//                questButton.setStyle("-fx-background-color: #0E0E0E; -fx-text-fill: white");
-//                questButton.setMinHeight(24);
-//                questButton.toFront();
-//                questsVBox.getChildren().add(questButton);
-//            }
-//        }
-//    }
+    private void updatePupilsList() {
+        pupilsList.getChildren().clear();
+        for (Pupil pupil : pupils) {
+            Button pupilButton = getPupilButton(pupil);
+            pupilsList.getChildren().add(pupilButton);
+        }
+    }
+
+    private void setPupilInfo(Pupil pupil) {
+        nameTextField.setText(pupil.getName());
+        surnameTextField.setText(pupil.getSurname());
+
+        if (pupil.getBirthDate() != null) {
+            birthDatePicker.setValue(pupil.getBirthDate());
+        }
+
+        if (pupil.getGrade() != null) {
+            gradePicker.setValue(pupil.getGrade());
+        }
+
+        if (pupil.getFavouriteSubject() != null) {
+            subjectPicker.setValue(pupil.getFavouriteSubject());
+        }
+
+        if (pupil.getPathToPhoto() != null) {
+            photoBox.setImage(new javafx.scene.image.Image(pupil.getPathToPhoto()));
+        } else {
+            photoBox.setImage(null);
+        }
+    }
+
+    private void showPupilInfo() {
+        pupilInfo.setVisible(true);
+    }
+
+    private void hidePupilInfo() {
+        pupilInfo.setVisible(false);
+    }
+
+    public void changePupilPhoto(ActionEvent actionEvent) throws IOException {
+        String photoPath = openFileChooser();
+        if (photoPath != null) {
+            Path copiedFilePath = Files.copy(
+                    Path.of(photoPath),
+                    Path.of(IMAGES + File.separator + new File(photoPath).getName()),
+                    StandardCopyOption.REPLACE_EXISTING);
+            File copiedImage = copiedFilePath.toFile();
+            photoBox.setImage(new javafx.scene.image.Image(copiedImage.toURI().toString()));
+        }
+    }
+
+    private String openFileChooser() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Выберите фото ученика");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
+
+        File selectedFile = fileChooser.showOpenDialog(null);
+
+
+        if (selectedFile != null) {
+            return selectedFile.getPath();
+        } else {
+            return null;
+        }
+    }
+
+    public void deletePupil(ActionEvent actionEvent) {
+        Pupil currentPupil = getCurrentPupil();
+        pupils.remove(currentPupil);
+
+        updatePupilsList();
+
+        if (pupils.isEmpty()) {
+            hidePupilInfo();
+        } else {
+            setPupilInfo(pupils.getLast());
+            currentPupilIndex = pupils.size() - 1;
+        }
+    }
+
+    public void savePupilInfo(ActionEvent actionEvent) {
+        Pupil currentPupil = getCurrentPupil();
+        currentPupil.setName(nameTextField.getText());
+        currentPupil.setSurname(surnameTextField.getText());
+
+        currentPupil.setBirthDate(birthDatePicker.getValue());
+
+        String grade = gradePicker.getValue();
+        if (grade != null && !grade.isEmpty()) {
+            currentPupil.setGrade(grade);
+            gradePicker.getItems().add(grade);
+        }
+
+        String subject = subjectPicker.getValue();
+        if (subject != null && !subject.isEmpty()) {
+            currentPupil.setFavouriteSubject(subject);
+            subjectPicker.getItems().add(subject);
+        }
+
+        if (photoBox.getImage() != null) {
+            currentPupil.setPathToPhoto(photoBox.getImage().getUrl());
+        }
+
+        updatePupilsList();
+    }
+
+    public void openFile(File file) {
+        try {
+            if (!Desktop.isDesktopSupported()) return;
+
+            Desktop desktop = Desktop.getDesktop();
+
+            if (file.exists()) {
+                desktop.open(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addDocument(ActionEvent actionEvent) throws IOException {
+        Pupil currentPupil = getCurrentPupil();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Выберите документ");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Documents", "*.pdf", "*.docx", "*.doc"));
+
+        File selectedFile = fileChooser.showOpenDialog(null);
+
+        if (selectedFile == null) return;
+
+        Path copiedFilePath = Files.copy(
+                Path.of(selectedFile.getAbsolutePath()),
+                Path.of(DOCS + File.separator + selectedFile.getName()),
+                StandardCopyOption.REPLACE_EXISTING);
+        File copiedFile = copiedFilePath.toFile();
+
+        currentPupil.addDocument(copiedFile.getPath());
+
+        updateDocumentsList();
+    }
+
+    private void updateDocumentsList() {
+        Pupil currentPupil = getCurrentPupil();
+
+        ObservableList<Document> data = FXCollections.observableArrayList();
+        for (String document : currentPupil.getDocuments()) {
+            data.add(new Document(document));
+        }
+
+        documentsColumn.setCellValueFactory(new PropertyValueFactory<>("document"));
+        filesTable.setItems(data);
+    }
+
+    public static class Document {
+        private final SimpleStringProperty document;
+
+        public Document(String document) {
+            this.document = new SimpleStringProperty(document);
+        }
+
+        public String getDocument() {
+            return document.get();
+        }
+
+        public void setDocument(String document) {
+            this.document.set(document);
+        }
+    }
 }
