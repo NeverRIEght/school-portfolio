@@ -21,16 +21,20 @@ public class MainPageController {
     @FXML
     public void createPupilButtonClicked() {
         Pupil newPupil = new Pupil("New", "Pupil");
+        Button pupilButton = getPupilButton(newPupil);
 
+        pupilsList.getChildren().add(pupilButton);
+    }
+
+    private Button getPupilButton(Pupil pupil) {
         Button pupilButton = new Button();
         pupilButton.setPrefWidth(320);
         pupilButton.setPrefHeight(28);
         pupilButton.setFont(javafx.scene.text.Font.font("Arial", 14));
-
-        pupilButton.setText(newPupil.getName() + " " + newPupil.getSurname());
-
         pupilButton.toFront();
-        pupilsList.getChildren().add(pupilButton);
+
+        pupilButton.setText(pupil.getName() + " " + pupil.getSurname());
+        return pupilButton;
     }
 
 //    @FXML
